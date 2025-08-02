@@ -3,9 +3,9 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-const authRoutes = require('./api/auth');
-const customerRoutes = require('./api/customers');
-const debitProcessorRoutes = require('./api/debit-processor');
+const authRoutes = require('./api/auth.js');
+const customerRoutes = require('./api/customers.js');
+const debitProcessorRoutes = require('./api/debit-processor.js');
 const scheduler = require('./scheduler');
 
 const app = express();
