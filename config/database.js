@@ -4,25 +4,27 @@ const postgres = require('postgres');
 // Get database URL from environment
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DATABASE_URL) {
-    // During build time, DATABASE_URL might not be available
-    // Only exit if we're actually trying to run the server
-    if (process.env.NODE_ENV !== 'build') {
-        console.error('DATABASE_URL environment variable is required!');
-        console.log('Please set your PostgreSQL database URL:');
-        console.log('1. Go to your Railway PostgreSQL service');
-        console.log('2. Click "Connect" tab');
-        console.log('3. Copy the "Database URL"');
-        console.log('4. Set it as DATABASE_URL environment variable in your app service');
-        process.exit(1);
-    } else {
-        // During build, just export empty objects
-        console.log('Build mode: DATABASE_URL not required');
-        module.exports = { db: null, sql: null };
-        return;
-    }
+// Check if we're in build mode (Railway build process)
+const isBuildMode = process.env.RAILWAY_ENVIRONMENT === undefined && !DATABASE_URL;
+
+if (!DATABASE_URL && !isBuildMode) {
+    console.error('DATABASE_URL environment variable is required!');
+    console.log('Please set your PostgreSQL database URL:');
+    console.log('1. Go to your Railway PostgreSQL service');
+    console.log('2. Click "Connect" tab');
+    console.log('3. Copy the "Database URL"');
+    console.log('4. Set it as DATABASE_URL environment variable in your app service');
+    process.exit(1);
 }
 
+if (isBuildMode) {
+    // During build, export stub functions
+    console.log('Build mode: DATABASE_URL not required during build');
+    module.exports = { 
+        db: null, 
+        sql: () => Promise.resolve([]) 
+    };
+} else {
 // Create PostgreSQL connection
 const sql = postgres(DATABASE_URL, {
     max: 10,
@@ -52,3 +54,4 @@ const testConnection = async () => {
 testConnection();
 
 module.exports = { db, sql };
+}
