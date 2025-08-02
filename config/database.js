@@ -5,14 +5,22 @@ const postgres = require('postgres');
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
-    console.error('DATABASE_URL environment variable is required!');
-    console.log('Please set your Supabase database URL:');
-    console.log('1. Go to your Supabase project dashboard');
-    console.log('2. Click "Connect" button');
-    console.log('3. Copy the URI from "Connection string" -> "Transaction pooler"');
-    console.log('4. Replace [YOUR-PASSWORD] with your database password');
-    console.log('5. Set it as DATABASE_URL environment variable');
-    process.exit(1);
+    // During build time, DATABASE_URL might not be available
+    // Only exit if we're actually trying to run the server
+    if (process.env.NODE_ENV !== 'build') {
+        console.error('DATABASE_URL environment variable is required!');
+        console.log('Please set your PostgreSQL database URL:');
+        console.log('1. Go to your Railway PostgreSQL service');
+        console.log('2. Click "Connect" tab');
+        console.log('3. Copy the "Database URL"');
+        console.log('4. Set it as DATABASE_URL environment variable in your app service');
+        process.exit(1);
+    } else {
+        // During build, just export empty objects
+        console.log('Build mode: DATABASE_URL not required');
+        module.exports = { db: null, sql: null };
+        return;
+    }
 }
 
 // Create PostgreSQL connection
@@ -34,8 +42,8 @@ const testConnection = async () => {
         console.error('❌ Database connection failed:', error.message);
         console.log('Please check your DATABASE_URL and ensure:');
         console.log('1. The URL is correct');
-        console.log('2. Your Supabase project is running');
-        console.log('3. The database password is correct');
+        console.log('2. Your PostgreSQL service is running');
+        console.log('3. The database connection string is correct');
         process.exit(1);
     }
 };
