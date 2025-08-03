@@ -1,11 +1,9 @@
-// db.js
-import postgres from 'postgres';
-import dotenv from 'dotenv';
-
-dotenv.config();
+// db.js (CommonJS version)
+const postgres = require('postgres');
+require('dotenv').config();
 
 const db = postgres(process.env.DATABASE_URL, {
   ssl: 'require'
 });
 
-export default db;
+module.exports = db;
