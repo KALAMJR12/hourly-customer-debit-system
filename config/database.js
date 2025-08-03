@@ -1,40 +1,46 @@
 const { drizzle } = require('drizzle-orm/postgres-js');
 const postgres = require('postgres');
 
+// Get database URL from environment
 const DATABASE_URL = process.env.DATABASE_URL;
 
-const isBuildMode = process.env.RAILWAY_ENVIRONMENT === undefined && !DATABASE_URL;
-
-if (!DATABASE_URL && !isBuildMode) {
-    console.error('❌ DATABASE_URL environment variable is required!');
-    console.log('🔧 Set it in Railway → Variables tab using your Supabase DB connection string');
+if (!DATABASE_URL) {
+    console.error('DATABASE_URL environment variable is required!');
+    console.log('Please set your Supabase PostgreSQL connection string:');
+    console.log('1. Go to your Supabase project dashboard');
+    console.log('2. Click "Connect" button');
+    console.log('3. Copy the URI from "Connection string" -> "Transaction pooler"');
+    console.log('4. Replace [YOUR-PASSWORD] with your database password');
+    console.log('5. Set it as DATABASE_URL environment variable');
     process.exit(1);
 }
 
-if (isBuildMode) {
-    console.log('⚙️ Build mode: DATABASE_URL not required');
-    module.exports = { db: null, sql: () => Promise.resolve([]) };
-} else {
-    const sql = postgres(DATABASE_URL, {
-        max: 10,
-        idle_timeout: 20,
-        connect_timeout: 60,
-        ssl: 'require', // ✅ Required for Supabase
-    });
+// Create PostgreSQL connection
+const sql = postgres(DATABASE_URL, {
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 60,
+});
 
-    const db = drizzle(sql);
+// Create Drizzle instance
+const db = drizzle(sql);
 
-    const testConnection = async () => {
-        try {
-            await sql`SELECT 1`;
-            console.log('✅ Database connection to Supabase successful');
-        } catch (error) {
-            console.error('❌ Failed to connect to Supabase:', error.message);
-            process.exit(1);
-        }
-    };
+// Test connection
+const testConnection = async () => {
+    try {
+        await sql`SELECT 1`;
+        console.log('✅ Database connection successful');
+    } catch (error) {
+        console.error('❌ Database connection failed:', error.message);
+        console.log('Please check your DATABASE_URL and ensure:');
+        console.log('1. The URL is correct');
+        console.log('2. Your Supabase project is running');
+        console.log('3. The database password is correct');
+        process.exit(1);
+    }
+};
 
-    testConnection();
+// Test connection on startup
+testConnection();
 
-    module.exports = { db, sql };
-}
+module.exports = { db, sql };
