@@ -1,3 +1,6 @@
+require('dotenv').config();
+const DATABASE_URL = process.env.DATABASE_URL;
+
 const { drizzle } = require('drizzle-orm/postgres-js');
 const postgres = require('postgres');
 
