@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 const { Pool } = require('pg');
+const db = require('./db');
 
 //const pool = new Pool({
   //connectionString: process.env.DATABASE_URL,
